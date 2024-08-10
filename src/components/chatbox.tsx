@@ -22,7 +22,7 @@ function Chatbox() {
   }, [messages]);
 
   return (
-    <div className='flex flex-col justify-between border h-[600px] min-w-[390px] rounded'>
+    <div className='flex flex-col justify-between w-full min-w-[390px] border h-[600px]  rounded'>
       <div className='flex flex-col flex-grow gap-y-4 w-full p-2 overflow-y-auto'>
         {!messages ||
           (messages.length === 0 && (

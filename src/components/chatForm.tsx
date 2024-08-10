@@ -39,10 +39,11 @@ export default function Chatform({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!values.text.trim()) return;
 
+    // Add the user's message and the "Thinking..." placeholder
     setMessages((messages) => [
       ...messages,
-      { role: "user", content: values.text }, // Add the user's message to the chat
-      { role: "assistant", content: "Thinking..." }, // Add a placeholder for the assistant's response
+      { role: "user", content: values.text },
+      { role: "assistant", content: "Thinking..." },
     ]);
 
     try {
@@ -67,18 +68,29 @@ export default function Chatform({
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
+      let assistantMessageIndex: number;
+
+      setMessages((messages) => {
+        assistantMessageIndex = messages.length - 1;
+        const updatedMessages = [...messages];
+        updatedMessages[assistantMessageIndex] = {
+          role: "assistant",
+          content: "",
+        };
+        return updatedMessages;
+      });
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         const text = decoder.decode(value, { stream: true });
         setMessages((messages) => {
-          let lastMessage = messages[messages.length - 1];
-          let otherMessages = messages.slice(0, messages.length - 1);
-          return [
-            ...otherMessages,
-            { ...lastMessage, content: lastMessage.content + text },
-          ];
+          const updatedMessages = [...messages];
+          updatedMessages[assistantMessageIndex] = {
+            ...updatedMessages[assistantMessageIndex],
+            content: updatedMessages[assistantMessageIndex].content + text,
+          };
+          return updatedMessages;
         });
       }
     } catch (error) {
@@ -94,7 +106,6 @@ export default function Chatform({
     }
     form.reset();
   }
-
   return (
     <div className='w-full'>
       <Form {...form}>
